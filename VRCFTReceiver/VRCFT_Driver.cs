@@ -226,6 +226,9 @@ public class VRCFT_Driver : IInputDriver, IDisposable
     OnSettingsChanged();
     Loader.config.OnThisConfigurationChanged += (_) => OnSettingsChanged();
     input.Engine.OnShutdown += Dispose;
+
+    RequestTrackingData();
+    UniLog.Log("[VRCFTReceiver] Inputs were registered, request tracking data!");
   }
 
   private void OnSettingsChanged()
@@ -745,6 +748,7 @@ public class VRCFT_Driver : IInputDriver, IDisposable
     int attempts = 0;
     while (oscSender == null && attempts < maxAttempts)
     {
+      Loader.Msg($"Initializing OSC Sender... (Attempt {attempts})");
       Thread.Sleep(sleepDurationMs);
       attempts++;
     }

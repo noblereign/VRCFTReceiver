@@ -1,6 +1,7 @@
+using Elements.Core;
+using FrooxEngine;
 using HarmonyLib;
 using ResoniteModLoader;
-using FrooxEngine;
 using System;
 
 namespace VRCFTReceiver
@@ -34,9 +35,28 @@ namespace VRCFTReceiver
 
         public override void OnEngineInit()
         {
-            config = GetConfiguration();
-            Harmony harmony = new Harmony("dev.hazre.VRCFTReceiver");
-            harmony.PatchAll();
+            try
+            {
+                config = GetConfiguration();
+
+                Harmony harmony = new Harmony("dev.hazre.VRCFTReceiver");
+                harmony.PatchAll();
+
+                var engine = Engine.Current;
+                if (engine != null)
+                {
+                    engine.RunPostInit(() => RegisterDriver(engine));
+                }
+                else
+                {
+                    UniLog.Error($"[VRCFTReceiver] OnEngineInit failed: Engine.Current is null");
+                }
+            }
+            catch (Exception ex)
+            {
+                UniLog.Error($"[VRCFTReceiver] OnEngineInit failed: {ex}");
+                throw;
+            }
         }
 
         [HarmonyPatch(typeof(UserRoot), "OnStart")]
@@ -44,31 +64,32 @@ namespace VRCFTReceiver
         {
             public static void Postfix(UserRoot __instance)
             {
-                Msg($"Starting UserRoot");
-                if (!__instance.ActiveUser.IsLocalUser) return;
-                if (VRCFTDriver == null)
+                if (__instance.ActiveUser.IsLocalUser && VRCFTDriver != null)
                 {
-                    Warn("VRCFT driver is not initialized!");
-                    return;
-                };
-                VRCFTDriver.RequestTrackingData();
+                    UniLog.Log("[VRCFTReceiver] User root found with an active driver, requesting tracking data.");
+                    VRCFTDriver.RequestTrackingData();
+                }
             }
         }
-        [HarmonyPatch(typeof(InputInterface), MethodType.Constructor)]
-        [HarmonyPatch(new Type[] { typeof(Engine) })]
-        public class InputInterfaceCtorPatch
+
+        private static void RegisterDriver(Engine engine)
         {
-            public static void Postfix(InputInterface __instance)
+            try
             {
-                try
+                if (engine.InputInterface != null)
                 {
                     VRCFTDriver = new VRCFT_Driver();
-                    __instance.RegisterInputDriver(VRCFTDriver);
+                    engine.InputInterface.RegisterInputDriver(VRCFTDriver);
+                    UniLog.Log("[VRCFTReceiver] Driver initialized successfully");
                 }
-                catch (Exception ex)
+                else
                 {
-                    Error($"Failed to initialize VRCFT driver! Exception: {ex}");
+                    UniLog.Error($"[VRCFTReceiver] RegisterDriver failed: Engine.InputInterface is null");
                 }
+            }
+            catch (Exception ex)
+            {
+                UniLog.Error($"[VRCFTReceiver] Driver initialization failed: {ex}");
             }
         }
     }
