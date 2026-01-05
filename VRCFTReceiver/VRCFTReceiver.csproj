@@ -7,7 +7,7 @@
     <AssemblyTitle>VRCFTReceiver</AssemblyTitle>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <LangVersion>10</LangVersion>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
     <GamePath>$(MSBuildThisFileDirectory)Resonite</GamePath>
@@ -43,7 +43,6 @@
     </Reference>
     <Reference Include="System.Net.Http">
       <HintPath>$(GamePath)Renderer\Renderite.Renderer_Data\Managed\System.Net.Http.dll</HintPath>
-      <HintPath>T:\RESOLauncher\profiles\resonitemodloader\Game\Renderer\Renderite.Renderer_Data\Managed\System.Net.Http.dll</HintPath>
     </Reference>
   </ItemGroup>
 
